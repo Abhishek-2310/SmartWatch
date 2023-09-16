@@ -25,6 +25,7 @@ static const char *TAG = "example";
  * maintains its value when ESP32 wakes from deep sleep.
  */
 RTC_DATA_ATTR static int boot_count = 0;
+char strftime_buf[64];
 
 static void obtain_time(void);
 
@@ -42,7 +43,7 @@ void time_sync_notification_cb(struct timeval *tv)
     ESP_LOGI(TAG, "Notification of a time synchronization event");
 }
 
-char* get_ntp_time(void)
+void get_ntp_time(void)
 {
     ++boot_count;
     ESP_LOGI(TAG, "Boot count: %d", boot_count);
@@ -80,7 +81,6 @@ char* get_ntp_time(void)
     }
 #endif
 
-    char strftime_buf[64];
 
     // Set timezone to Eastern Standard Time and print local time
     setenv("TZ", "EST5EDT,M3.2.0/2,M11.1.0", 1);
@@ -89,7 +89,7 @@ char* get_ntp_time(void)
     strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
     ESP_LOGI(TAG, "The current date/time in Canada is: %s", strftime_buf);
 
-    // Set timezone to China Standard Time
+    //Set timezone to China Standard Time
     // setenv("TZ", "CST-8", 1);
     // tzset();
     // localtime_r(&now, &timeinfo);
@@ -108,9 +108,6 @@ char* get_ntp_time(void)
         }
     }
 
- 
-
-    return strftime_buf;
 }
 
 static void print_servers(void)
@@ -223,25 +220,44 @@ static void obtain_time(void)
 
 void display_time()
 {
-
-    const char * tim_str = get_ntp_time();
+    get_ntp_time();
+    char * tim_str = &strftime_buf[11];
+    *(tim_str + 5) = '\0';
     ESP_LOGI(TAG, "The current date/time is: %s", tim_str);
+
+    char * hours = tim_str;
+    char * minutes = tim_str + 3;
+    *(hours + 2) = '\0';
+
 
     static lv_style_t style_screen;
     lv_style_init(&style_screen);
     lv_style_set_bg_color(&style_screen, LV_STATE_DEFAULT, LV_COLOR_BLACK);
     lv_obj_add_style(lv_scr_act(), LV_OBJ_PART_MAIN, &style_screen);  //turn the screen white
 
-	lv_obj_t *label = lv_label_create(lv_scr_act(), NULL);
-    lv_label_set_text(label, "01:38");  // set text
+	lv_obj_t *hour_label = lv_label_create(lv_scr_act(), NULL);
+    lv_label_set_text(hour_label, hours);  // set text
 
-    lv_obj_set_style_local_bg_opa(label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
-    lv_obj_set_style_local_text_color(label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_RED);           // fg color
-    lv_obj_set_style_local_text_font(label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_22);  // font size(template：lv_font_montserrat_xx)
+    lv_obj_set_style_local_bg_opa(hour_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
+    lv_obj_set_style_local_text_color(hour_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_RED);           // fg color
+    lv_obj_set_style_local_text_font(hour_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_48);  // font size(template：lv_font_montserrat_xx)
 
-	lv_obj_align(label, NULL, LV_ALIGN_CENTER, 0, 0);
+	// lv_obj_set_pos(hour_label, 60,50);
+    lv_obj_align(hour_label, NULL, LV_ALIGN_CENTER, 0, -35);
 
-       const int deep_sleep_sec = 10;
-    ESP_LOGI(TAG, "Entering deep sleep for %d seconds", deep_sleep_sec);
-    esp_deep_sleep(1000000LL * deep_sleep_sec);
+    lv_obj_t *minute_label = lv_label_create(lv_scr_act(), NULL);
+    lv_label_set_text(minute_label, minutes);  // set text
+
+    // lv_obj_set_style_local_bg_opa(minute_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
+    lv_obj_set_style_local_text_color(minute_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_YELLOW);           // fg color
+    lv_obj_set_style_local_text_font(minute_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_48);  // font size(template：lv_font_montserrat_xx)
+
+	// lv_obj_set_pos(minute_label, 60,120);
+    lv_obj_align(minute_label, NULL, LV_ALIGN_CENTER, 0, 35);
+
+
+    //Deep Sleep
+    // const int deep_sleep_sec = 10;
+    // ESP_LOGI(TAG, "Entering deep sleep for %d seconds", deep_sleep_sec);
+    // esp_deep_sleep(1000000LL * deep_sleep_sec);
 }
