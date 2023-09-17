@@ -1,1 +1,1 @@
-# SmartWatch Project on ESP32 using LVGL
+# SmartWatch IoT Project on ESP32 using LVGL
