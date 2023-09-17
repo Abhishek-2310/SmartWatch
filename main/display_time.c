@@ -1,6 +1,8 @@
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
+#include <ctype.h>
+
 #include "esp_system.h"
 #include "esp_event.h"
 #include "esp_log.h"
@@ -221,40 +223,66 @@ static void obtain_time(void)
 void display_time()
 {
     get_ntp_time();
+
+    // String slicing to get day, date and time
+    char * day_str = strftime_buf;
+    *(day_str + 3) = '\0';
+
+    int i = 0;
+
+    while (*(day_str + i))
+    {
+        *(day_str + i) = toupper(*(day_str + i));
+        i++;
+    }
+    ESP_LOGI(TAG, "The current day is: %s", day_str);
+
+    char * date_str = &strftime_buf[8];
+    *(date_str + 2) = '\0';
+    ESP_LOGI(TAG, "The current date is: %s", date_str);
+
     char * tim_str = &strftime_buf[11];
     *(tim_str + 5) = '\0';
-    ESP_LOGI(TAG, "The current date/time is: %s", tim_str);
+    ESP_LOGI(TAG, "The current time is: %s", tim_str);
 
-    char * hours = tim_str;
-    char * minutes = tim_str + 3;
-    *(hours + 2) = '\0';
-
-
+    // Background Style to turn it black
     static lv_style_t style_screen;
     lv_style_init(&style_screen);
     lv_style_set_bg_color(&style_screen, LV_STATE_DEFAULT, LV_COLOR_BLACK);
     lv_obj_add_style(lv_scr_act(), LV_OBJ_PART_MAIN, &style_screen);  //turn the screen white
 
-	lv_obj_t *hour_label = lv_label_create(lv_scr_act(), NULL);
-    lv_label_set_text(hour_label, hours);  // set text
 
-    lv_obj_set_style_local_bg_opa(hour_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
-    lv_obj_set_style_local_text_color(hour_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_RED);           // fg color
-    lv_obj_set_style_local_text_font(hour_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_48);  // font size(template：lv_font_montserrat_xx)
+	lv_obj_t *tim_label = lv_label_create(lv_scr_act(), NULL);
+    lv_label_set_text(tim_label, tim_str);  // set text
+
+    lv_obj_set_style_local_bg_opa(tim_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
+    lv_obj_set_style_local_text_color(tim_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_YELLOW);           // fg color
+    lv_obj_set_style_local_text_font(tim_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_48);  // font size(template：lv_font_montserrat_xx)
 
 	// lv_obj_set_pos(hour_label, 60,50);
-    lv_obj_align(hour_label, NULL, LV_ALIGN_CENTER, 0, -35);
+    lv_obj_align(tim_label, NULL, LV_ALIGN_CENTER, 0, -60);
 
-    lv_obj_t *minute_label = lv_label_create(lv_scr_act(), NULL);
-    lv_label_set_text(minute_label, minutes);  // set text
 
-    // lv_obj_set_style_local_bg_opa(minute_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
-    lv_obj_set_style_local_text_color(minute_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_YELLOW);           // fg color
-    lv_obj_set_style_local_text_font(minute_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_48);  // font size(template：lv_font_montserrat_xx)
+    lv_obj_t *day_label = lv_label_create(lv_scr_act(), NULL);
+    lv_label_set_text(day_label, day_str);  // set text
 
-	// lv_obj_set_pos(minute_label, 60,120);
-    lv_obj_align(minute_label, NULL, LV_ALIGN_CENTER, 0, 35);
+    lv_obj_set_style_local_bg_opa(day_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
+    lv_obj_set_style_local_text_color(day_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);           // fg color
+    lv_obj_set_style_local_text_font(day_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_28);  // font size(template：lv_font_montserrat_xx)
 
+	// lv_obj_set_pos(hour_label, 60,50);
+    lv_obj_align(day_label, NULL, LV_ALIGN_CENTER, 0, 30);
+
+
+    lv_obj_t *date_label = lv_label_create(lv_scr_act(), NULL);
+    lv_label_set_text(date_label, date_str);  // set text
+
+    lv_obj_set_style_local_bg_opa(date_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
+    lv_obj_set_style_local_text_color(date_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_YELLOW);           // fg color
+    lv_obj_set_style_local_text_font(date_label, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_48);  // font size(template：lv_font_montserrat_xx)
+
+	// lv_obj_set_pos(hour_label, 60,50);
+    lv_obj_align(date_label, NULL, LV_ALIGN_CENTER, 0, 80);
 
     //Deep Sleep
     // const int deep_sleep_sec = 10;
