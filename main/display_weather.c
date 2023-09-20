@@ -124,7 +124,7 @@ void openweather_api_http(void *pvParameters)
     vTaskDelete(NULL);
 }
 
-void app_main(void)
+void get_weather_update(void)
 {
 	esp_err_t ret = nvs_flash_init();
 	if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
