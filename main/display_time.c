@@ -216,7 +216,7 @@ static void obtain_time(void)
     time(&now);
     localtime_r(&now, &timeinfo);
 
-    ESP_ERROR_CHECK( example_disconnect() );
+    // ESP_ERROR_CHECK( example_disconnect() );
     esp_netif_sntp_deinit();
 }
 

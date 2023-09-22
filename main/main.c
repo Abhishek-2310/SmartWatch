@@ -30,19 +30,6 @@
 
 #include "lvgl_helpers.h"
 
-#ifndef CONFIG_LV_TFT_DISPLAY_MONOCHROME
-    #if defined CONFIG_LV_USE_DEMO_WIDGETS
-        #include "lv_examples/src/lv_demo_widgets/lv_demo_widgets.h"
-    #elif defined CONFIG_LV_USE_DEMO_KEYPAD_AND_ENCODER
-        #include "lv_examples/src/lv_demo_keypad_encoder/lv_demo_keypad_encoder.h"
-    #elif defined CONFIG_LV_USE_DEMO_BENCHMARK
-        #include "lv_examples/src/lv_demo_benchmark/lv_demo_benchmark.h"
-    #elif defined CONFIG_LV_USE_DEMO_STRESS
-        #include "lv_examples/src/lv_demo_stress/lv_demo_stress.h"
-    #else
-        #error "No demo application selected."
-    #endif
-#endif
 
 /*********************
  *      DEFINES
@@ -150,9 +137,9 @@ static void guiTask(void *pvParameter) {
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
 
     /* Create the demo application */
-    // create_demo_application();
+    // loading_display();
     display_time();
-    // get_weather_update();
+    get_weather_update();
 
     while (1) {
         /* Delay 1 tick (assumes FreeRTOS tick is 10ms */
@@ -173,43 +160,6 @@ static void guiTask(void *pvParameter) {
     vTaskDelete(NULL);
 }
 
-// static void create_demo_application(void)
-// {
-//     /* When using a monochrome display we only show "Hello World" centered on the
-//      * screen */
-// #if defined CONFIG_LV_TFT_DISPLAY_MONOCHROME || 
-//     defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7735S
-
-//     /* use a pretty small demo for monochrome displays */
-//     /* Get the current screen  */
-//     lv_obj_t * scr = lv_disp_get_scr_act(NULL);
-
-//     /*Create a Label on the currently active screen*/
-//     lv_obj_t * label1 =  lv_label_create(scr, NULL);
-
-//     /*Modify the Label's text*/
-//     lv_label_set_text(label1, "Hello\nworld");
-
-//     /* Align the Label to the center
-//      * NULL means align on parent (which is the screen now)
-//      * 0, 0 at the end means an x, y offset after alignment*/
-//     lv_obj_align(label1, NULL, LV_ALIGN_CENTER, 0, 0);
-// #else
-//     /* Otherwise we show the selected demo */
-
-//     #if defined CONFIG_LV_USE_DEMO_WIDGETS
-//         lv_demo_widgets();
-//     #elif defined CONFIG_LV_USE_DEMO_KEYPAD_AND_ENCODER
-//         lv_demo_keypad_encoder();
-//     #elif defined CONFIG_LV_USE_DEMO_BENCHMARK
-//         lv_demo_benchmark();
-//     #elif defined CONFIG_LV_USE_DEMO_STRESS
-//         lv_demo_stress();
-//     #else
-//         #error "No demo application selected."
-//     #endif
-// #endif
-// }
 
 static void lv_tick_task(void *arg) {
     (void) arg;

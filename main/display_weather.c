@@ -133,9 +133,9 @@ void get_weather_update(void)
 		ret = nvs_flash_init();
 	}
 	ESP_ERROR_CHECK(ret);
-	connect_wifi();
-	if (wifi_connect_status)
-	{
-		xTaskCreate(&openweather_api_http, "openweather_api_http", 8192, NULL, 6, NULL);
-	}
+	// connect_wifi();
+	// if (wifi_connect_status)
+	// {
+    xTaskCreate(&openweather_api_http, "openweather_api_http", 8192, NULL, 6, NULL);
+	// }
 }
