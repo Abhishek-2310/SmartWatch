@@ -14,7 +14,7 @@
 #include "connect_wifi.h"
 #include <cJSON.h>
 
-static const char *TAG = "HTTP_CLIENT";
+static const char *TAG = "display_weather";
 
 // API key from OpenWeatherMap 
 char open_weather_map_api_key[] = "87d57e01d9131a17b0f4b049bbb8be19";

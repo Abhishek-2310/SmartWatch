@@ -94,7 +94,6 @@ static void obtain_time(void)
         ESP_LOGI(TAG, "Waiting for system time to be set... (%d/%d)", retry, retry_count);
     }
 
-    // ESP_ERROR_CHECK( example_disconnect() );
     esp_netif_sntp_deinit();
 }
 
@@ -130,7 +129,7 @@ void display_time()
     lv_style_set_bg_color(&style_screen, LV_STATE_DEFAULT, LV_COLOR_BLACK);
     lv_obj_add_style(lv_scr_act(), LV_OBJ_PART_MAIN, &style_screen);  //turn the screen white
 
-
+    /* Time */
 	lv_obj_t *tim_label = lv_label_create(lv_scr_act(), NULL);
     lv_label_set_text(tim_label, tim_str);  // set text
 
@@ -141,7 +140,7 @@ void display_time()
 	// lv_obj_set_pos(hour_label, 60,50);
     lv_obj_align(tim_label, NULL, LV_ALIGN_CENTER, 0, -60);
 
-
+    /* Day */
     lv_obj_t *day_label = lv_label_create(lv_scr_act(), NULL);
     lv_label_set_text(day_label, day_str);  // set text
 
@@ -152,7 +151,7 @@ void display_time()
 	// lv_obj_set_pos(hour_label, 60,50);
     lv_obj_align(day_label, NULL, LV_ALIGN_CENTER, 0, 30);
 
-
+    /* Date */
     lv_obj_t *date_label = lv_label_create(lv_scr_act(), NULL);
     lv_label_set_text(date_label, date_str);  // set text
 

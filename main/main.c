@@ -46,7 +46,8 @@
  **********************/
 static void lv_tick_task(void *arg);
 static void guiTask(void *pvParameter);
-// static void create_demo_application(void);
+
+extern void loading_display(void);
 extern void display_time(void);
 extern void get_weather_update(void);
 /**********************
@@ -64,6 +65,8 @@ void app_main() {
      * examples/protocols/README.md for more information about this function.
      */
     ESP_ERROR_CHECK(example_connect());
+    
+    // ESP_ERROR_CHECK( example_disconnect() );
 
     /* If you want to use a task to create the graphic, you NEED to create a Pinned task
      * Otherwise there can be problem such as memory corruption and so on.
@@ -152,9 +155,9 @@ static void guiTask(void *pvParameter) {
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
 
     /* Create the demo application */
-    // loading_display();
-    display_time();
-    get_weather_update();
+    loading_display();
+    // display_time();
+    // get_weather_update();
 
     while (1) {
         /* Delay 1 tick (assumes FreeRTOS tick is 10ms */
