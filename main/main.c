@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <string.h>
 
 #include "freertos/FreeRTOS.h"
@@ -52,29 +53,15 @@ extern void loading_display(void);
 extern void display_time(void);
 extern void get_weather_update(void);
 
-void WiFi_Connect(void *pvParameter);
+// void WiFi_Connect(void *pvParameter);
+
+extern char strftime_buf[64];
+
 /**********************
  *   APPLICATION MAIN
  **********************/
 void app_main() 
 {
-
-    xTaskCreatePinnedToCore(WiFi_Connect, "WiFi Task", 4096, NULL, 0, NULL, 0);
-
-    /* If you want to use a task to create the graphic, you NEED to create a Pinned task
-     * Otherwise there can be problem such as memory corruption and so on.
-     * NOTE: When not using Wi-Fi nor Bluetooth you can pin the guiTask to core 0 */
-    xTaskCreatePinnedToCore(guiTask, "gui", 4096*2, NULL, 0, NULL, 1);
-}
-
-
-void WiFi_Connect(void *pvParameter)
-{
-    ESP_LOGI("Entered", "Task1 - WiFi_Connect");
-
-    // LED Config
-    uint8_t led_state = 0;
-
     // Connect to WiFi     
     ESP_ERROR_CHECK( nvs_flash_init() );
     ESP_ERROR_CHECK(esp_netif_init());
@@ -85,20 +72,40 @@ void WiFi_Connect(void *pvParameter)
      * examples/protocols/README.md for more information about this function.
      */
     ESP_ERROR_CHECK(example_connect());
-    
-    // ESP_ERROR_CHECK( example_disconnect() );
 
-    // loop forever
-    while (1) {
-        // Toggle LED
-        led_state = !led_state;
-        ESP_LOGI("Task 1", "turning LED %s", led_state == 0 ? "ON" : "OFF");
-        vTaskDelay(500 / portTICK_PERIOD_MS);
-    }
+    // xTaskCreatePinnedToCore(WiFi_Connect, "WiFi Task", 4096, NULL, 0, NULL, 0);
 
-    // Delete this task if it exits from the loop above
-    vTaskDelete(NULL);
+    /* If you want to use a task to create the graphic, you NEED to create a Pinned task
+     * Otherwise there can be problem such as memory corruption and so on.
+     * NOTE: When not using Wi-Fi nor Bluetooth you can pin the guiTask to core 0 */
+    xTaskCreatePinnedToCore(guiTask, "gui", 4096*2, NULL, 0, NULL, 1);
 }
+
+
+// void WiFi_Connect(void *pvParameter)
+// {
+//     ESP_LOGI("Entered", "WiFi Task");
+
+//     // LED Config
+//     uint8_t led_state = 0;
+
+//     // Connect to WiFi     
+//     ESP_ERROR_CHECK( nvs_flash_init() );
+//     ESP_ERROR_CHECK(esp_netif_init());
+//     ESP_ERROR_CHECK( esp_event_loop_create_default() );
+
+//     /* This helper function configures Wi-Fi or Ethernet, as selected in menuconfig.
+//      * Read "Establishing Wi-Fi or Ethernet Connection" section in
+//      * examples/protocols/README.md for more information about this function.
+//      */
+//     ESP_ERROR_CHECK(example_connect());
+    
+//     // ESP_ERROR_CHECK( example_disconnect() );
+
+//     // Delete this task if it exits from the loop above
+//     ESP_LOGI("Leaving", "WiFi Task Delete");
+//     vTaskDelete(NULL);
+// }
 
 
 /* Creates a semaphore to handle concurrent call to lvgl stuff
@@ -182,13 +189,21 @@ static void guiTask(void *pvParameter) {
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
 
     /* Create the demo application */
-    loading_display();
-    // display_time();
+    // loading_display();
+    display_time();
     // get_weather_update();
-
+    time_t now;
+    struct tm timeinfo;
+    
     while (1) {
         /* Delay 1 tick (assumes FreeRTOS tick is 10ms */
         vTaskDelay(pdMS_TO_TICKS(10));
+
+        // time(&now);
+
+        // localtime_r(&now, &timeinfo);
+        // strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+        // ESP_LOGI(TAG, "The current date/time in Canada is: %s", strftime_buf);
 
         /* Try to take the semaphore, call lvgl related function on success */
         if (pdTRUE == xSemaphoreTake(xGuiSemaphore, portMAX_DELAY)) {

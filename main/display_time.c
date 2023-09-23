@@ -39,6 +39,12 @@ void get_ntp_time(void)
 {
     time_t now;
     struct tm timeinfo;
+    
+    time(&now);
+
+    localtime_r(&now, &timeinfo);
+    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    ESP_LOGI(TAG, "The current date/time in Canada is: %s", strftime_buf);
 
     ESP_LOGI(TAG, "Time is not set yet");
     obtain_time();
