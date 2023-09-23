@@ -18,6 +18,7 @@
 #include "esp_freertos_hooks.h"
 #include "freertos/semphr.h"
 #include "esp_system.h"
+#include "esp_log.h"
 #include "esp_timer.h"
 #include "driver/gpio.h"
 
@@ -40,7 +41,7 @@
  *********************/
 #define TAG "demo"
 #define LV_TICK_PERIOD_MS 1
-
+#define BLINK_LED 2
 /**********************
  *  STATIC PROTOTYPES
  **********************/
@@ -50,10 +51,29 @@ static void guiTask(void *pvParameter);
 extern void loading_display(void);
 extern void display_time(void);
 extern void get_weather_update(void);
+
+void WiFi_Connect(void *pvParameter);
 /**********************
  *   APPLICATION MAIN
  **********************/
-void app_main() {
+void app_main() 
+{
+
+    xTaskCreatePinnedToCore(WiFi_Connect, "WiFi Task", 4096, NULL, 0, NULL, 0);
+
+    /* If you want to use a task to create the graphic, you NEED to create a Pinned task
+     * Otherwise there can be problem such as memory corruption and so on.
+     * NOTE: When not using Wi-Fi nor Bluetooth you can pin the guiTask to core 0 */
+    xTaskCreatePinnedToCore(guiTask, "gui", 4096*2, NULL, 0, NULL, 1);
+}
+
+
+void WiFi_Connect(void *pvParameter)
+{
+    ESP_LOGI("Entered", "Task1 - WiFi_Connect");
+
+    // LED Config
+    uint8_t led_state = 0;
 
     // Connect to WiFi     
     ESP_ERROR_CHECK( nvs_flash_init() );
@@ -68,11 +88,18 @@ void app_main() {
     
     // ESP_ERROR_CHECK( example_disconnect() );
 
-    /* If you want to use a task to create the graphic, you NEED to create a Pinned task
-     * Otherwise there can be problem such as memory corruption and so on.
-     * NOTE: When not using Wi-Fi nor Bluetooth you can pin the guiTask to core 0 */
-    xTaskCreatePinnedToCore(guiTask, "gui", 4096*2, NULL, 0, NULL, 1);
+    // loop forever
+    while (1) {
+        // Toggle LED
+        led_state = !led_state;
+        ESP_LOGI("Task 1", "turning LED %s", led_state == 0 ? "ON" : "OFF");
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
+
+    // Delete this task if it exits from the loop above
+    vTaskDelete(NULL);
 }
+
 
 /* Creates a semaphore to handle concurrent call to lvgl stuff
  * If you wish to call *any* lvgl function from other threads/tasks
