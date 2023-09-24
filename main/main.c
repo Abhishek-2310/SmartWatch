@@ -51,11 +51,12 @@ static void guiTask(void *pvParameter);
 
 extern void loading_display(void);
 extern void display_time(void);
+extern void get_ntp_time(void);
 extern void get_weather_update(void);
-
+extern void lv_task_modes(void);
 // void WiFi_Connect(void *pvParameter);
 
-extern char strftime_buf[64];
+// extern char strftime_buf[64];
 
 /**********************
  *   APPLICATION MAIN
@@ -190,8 +191,10 @@ static void guiTask(void *pvParameter) {
 
     /* Create the demo application */
     // loading_display();
-    display_time();
-    // get_weather_update();
+    get_ntp_time();
+    // display_time();
+    get_weather_update();
+    lv_task_modes();
     
     while (1) {
         /* Delay 1 tick (assumes FreeRTOS tick is 10ms */
