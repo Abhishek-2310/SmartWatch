@@ -192,18 +192,10 @@ static void guiTask(void *pvParameter) {
     // loading_display();
     display_time();
     // get_weather_update();
-    time_t now;
-    struct tm timeinfo;
     
     while (1) {
         /* Delay 1 tick (assumes FreeRTOS tick is 10ms */
         vTaskDelay(pdMS_TO_TICKS(10));
-
-        // time(&now);
-
-        // localtime_r(&now, &timeinfo);
-        // strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-        // ESP_LOGI(TAG, "The current date/time in Canada is: %s", strftime_buf);
 
         /* Try to take the semaphore, call lvgl related function on success */
         if (pdTRUE == xSemaphoreTake(xGuiSemaphore, portMAX_DELAY)) {

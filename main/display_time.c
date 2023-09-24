@@ -26,8 +26,9 @@ static const char *TAG = "display_time";
 
 char strftime_buf[64];
 
+/* Prototypes */
 static void obtain_time(void);
-
+void lv_display_time(lv_task_t* task);
 
 void time_sync_notification_cb(struct timeval *tv)
 {
@@ -108,6 +109,24 @@ void display_time()
 {
     get_ntp_time();
 
+    lv_task_create(lv_display_time, 30000, LV_TASK_PRIO_LOW, NULL);
+    //Deep Sleep
+    // const int deep_sleep_sec = 10;
+    // ESP_LOGI(TAG, "Entering deep sleep for %d seconds", deep_sleep_sec);
+    // esp_deep_sleep(1000000LL * deep_sleep_sec);
+}
+
+
+void lv_display_time(lv_task_t* task)
+{
+    time_t now;
+    struct tm timeinfo;
+    time(&now);
+
+    localtime_r(&now, &timeinfo);
+    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    ESP_LOGI(TAG, "The current date/time in Canada is: %s", strftime_buf);
+
     // String slicing to get day, date and time
     char * day_str = strftime_buf;
     *(day_str + 3) = '\0';
@@ -129,13 +148,14 @@ void display_time()
     *(tim_str + 5) = '\0';
     ESP_LOGI(TAG, "The current time is: %s", tim_str);
 
+    lv_obj_clean(lv_scr_act());
     // Background Style to turn it black
     static lv_style_t style_screen;
     lv_style_init(&style_screen);
     lv_style_set_bg_color(&style_screen, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-    lv_obj_add_style(lv_scr_act(), LV_OBJ_PART_MAIN, &style_screen);  //turn the screen white
+    lv_obj_add_style(lv_scr_act(), LV_OBJ_PART_MAIN, &style_screen); 
 
-    /* Time */
+
 	lv_obj_t *tim_label = lv_label_create(lv_scr_act(), NULL);
     lv_label_set_text(tim_label, tim_str);  // set text
 
@@ -146,7 +166,7 @@ void display_time()
 	// lv_obj_set_pos(hour_label, 60,50);
     lv_obj_align(tim_label, NULL, LV_ALIGN_CENTER, 0, -60);
 
-    /* Day */
+
     lv_obj_t *day_label = lv_label_create(lv_scr_act(), NULL);
     lv_label_set_text(day_label, day_str);  // set text
 
@@ -157,7 +177,7 @@ void display_time()
 	// lv_obj_set_pos(hour_label, 60,50);
     lv_obj_align(day_label, NULL, LV_ALIGN_CENTER, 0, 30);
 
-    /* Date */
+
     lv_obj_t *date_label = lv_label_create(lv_scr_act(), NULL);
     lv_label_set_text(date_label, date_str);  // set text
 
@@ -167,9 +187,4 @@ void display_time()
 
 	// lv_obj_set_pos(hour_label, 60,50);
     lv_obj_align(date_label, NULL, LV_ALIGN_CENTER, 0, 80);
-
-    //Deep Sleep
-    // const int deep_sleep_sec = 10;
-    // ESP_LOGI(TAG, "Entering deep sleep for %d seconds", deep_sleep_sec);
-    // esp_deep_sleep(1000000LL * deep_sleep_sec);
 }
