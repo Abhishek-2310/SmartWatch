@@ -55,13 +55,24 @@ void get_temp_pressure_humidity(const char *json_string)
         }
     }
 
-    weather_temp = cJSON_GetObjectItemCaseSensitive(obj, "temp")->valuedouble;
-    weather_pressure = cJSON_GetObjectItemCaseSensitive(obj, "pressure")->valueint;
-    weather_humidity = cJSON_GetObjectItemCaseSensitive(obj, "humidity")->valueint;
-    printf("Temperature: %0.00f°C\nPressure: %d hPa\nHumidity: %d%%\n", weather_temp, weather_pressure, weather_humidity);
+    double temp = cJSON_GetObjectItemCaseSensitive(obj, "temp")->valuedouble;
+    int pressure = cJSON_GetObjectItemCaseSensitive(obj, "pressure")->valueint;
+    int humidity = cJSON_GetObjectItemCaseSensitive(obj, "humidity")->valueint;
+    printf("Temperature: %0.00f°C\nPressure: %d hPa\nHumidity: %d%%\n", temp, pressure, humidity);
     
+    weather_temp = temp;
+    weather_pressure = pressure;
+    weather_humidity = humidity;
+    printf("Temperature: %0.00f°C\nPressure: %d hPa\nHumidity: %d%%\n", weather_temp, weather_pressure, weather_humidity);
+
     cJSON_Delete(root);
     free(response_data);
+    ESP_LOGI(TAG, "response_data freed!");
+
+    // Reset Response parameters
+    response_data = NULL;
+    response_len = 0;
+    // all_chunks_received = false;
 }
 
 esp_err_t _http_event_handler(esp_http_client_event_t *evt)
@@ -89,7 +100,10 @@ void openweather_api_http(void *pvParameters)
 {
 
     char open_weather_map_url[200];
-    snprintf(open_weather_map_url,
+
+    while (1) 
+    { 
+        snprintf(open_weather_map_url,
              sizeof(open_weather_map_url),
              "%s%s%s%s%s%s%s",
              "http://api.openweathermap.org/data/2.5/weather?q=",
@@ -100,34 +114,37 @@ void openweather_api_http(void *pvParameters)
              open_weather_map_api_key,
              "&units=metric");
 
-    esp_http_client_config_t config = {
-        .url = open_weather_map_url,
-        .method = HTTP_METHOD_GET,
-        .event_handler = _http_event_handler,
-    };
+        esp_http_client_config_t config = {
+            .url = open_weather_map_url,
+            .method = HTTP_METHOD_GET,
+            .event_handler = _http_event_handler,
+        };
 
-    esp_http_client_handle_t client = esp_http_client_init(&config);
-    esp_http_client_set_header(client, "Content-Type", "application/x-www-form-urlencoded");
+        esp_http_client_handle_t client = esp_http_client_init(&config);
+        esp_http_client_set_header(client, "Content-Type", "application/x-www-form-urlencoded");
 
-    esp_err_t err = esp_http_client_perform(client);
+        esp_err_t err = esp_http_client_perform(client);
 
-    if (err == ESP_OK)
-    {
-        int status_code = esp_http_client_get_status_code(client);
-        if (status_code == 200)
+        if (err == ESP_OK)
         {
-            ESP_LOGI(TAG, "Message sent Successfully");
+            int status_code = esp_http_client_get_status_code(client);
+            if (status_code == 200)
+            {
+                ESP_LOGI(TAG, "Message sent Successfully");
+            }
+            else
+            {
+                ESP_LOGI(TAG, "Message sent Failed");
+            }
         }
         else
         {
             ESP_LOGI(TAG, "Message sent Failed");
         }
+        esp_http_client_cleanup(client);
+    
+        vTaskDelay(pdMS_TO_TICKS(5000));
     }
-    else
-    {
-        ESP_LOGI(TAG, "Message sent Failed");
-    }
-    esp_http_client_cleanup(client);
 
     vTaskDelete(NULL);
 }
@@ -144,6 +161,6 @@ void get_weather_update(void)
 	// connect_wifi();
 	// if (wifi_connect_status)
 	// {
-    xTaskCreate(&openweather_api_http, "openweather_api_http", 8192, NULL, 6, NULL);
+        xTaskCreate(&openweather_api_http, "openweather_api_http", 8192, NULL, 1, NULL);
 	// }
 }
